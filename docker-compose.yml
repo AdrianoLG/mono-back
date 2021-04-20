@@ -1,0 +1,73 @@
+version: '3'
+services:
+  dev:
+    container_name: mono-api-dev
+    command: npm run start:dev
+    depends_on:
+      - dev-db-ui
+    restart: always
+    build:
+      context: .
+      target: development
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+      - 9229:9229
+    env_file:
+      - .env
+    volumes:
+      - ./:/mono/src/app
+      - /mono/src/app/node_modules
+  prod:
+    container_name: mono-api
+    command: >
+      sh -c "npm test
+      && npm run build
+      && npm run start:prod"
+    depends_on:
+      - prod-db
+    restart: always
+    build:
+      context: .
+      target: production
+    ports:
+      - ${SERVER_PROD_PORT}:${SERVER_PORT}
+      - 9229:9229
+    env_file:
+      - .env
+    volumes:
+      - ./:/mono/src/app
+  dev-db-ui:
+    container_name: mono-mongo-express
+    depends_on:
+      - dev-db
+    restart: always
+    image: mongo-express
+    ports:
+      - ${DB_UI_PORT}:${DB_UI_PORT}
+    environment:
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=false
+      - ME_CONFIG_BASICAUTH_USERNAME=${DB_USER}
+      - ME_CONFIG_BASICAUTH_PASSWORD=${DB_PASSWORD}
+      - ME_CONFIG_MONGODB_SERVER=dev-db
+      - ME_CONFIG_MONGODB_PORT=${DB_PORT}
+  dev-db:
+    container_name: mono-mongo-dev
+    restart: always
+    image: mongo:latest
+    volumes:
+      - mongodata:/data/db
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASSWORD}
+  prod-db:
+    container_name: mono-mongo
+    restart: always
+    image: mongo:latest
+    ports:
+      - ${DB_PROD_PORT}:${DB_PORT}
+    volumes:
+      - mongodata:/data/db
+volumes:
+  mongodata:
