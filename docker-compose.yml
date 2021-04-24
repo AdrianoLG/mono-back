@@ -4,7 +4,7 @@ services:
     container_name: mono-api-dev
     command: npm run start:dev
     depends_on:
-      - dev-db-ui
+      - dev-db
     restart: always
     build:
       context: .
@@ -17,6 +17,8 @@ services:
     volumes:
       - ./:/mono/src/app
       - /mono/src/app/node_modules
+    environment:
+      - DB_URL=mongodb://mono-mongo-dev
   prod:
     container_name: mono-api
     command: >
@@ -36,6 +38,8 @@ services:
       - .env
     volumes:
       - ./:/mono/src/app
+    environment:
+      - DB_URL=mongodb://mono-mongo
   dev-db-ui:
     container_name: mono-mongo-express
     depends_on:
@@ -45,11 +49,9 @@ services:
     ports:
       - ${DB_UI_PORT}:${DB_UI_PORT}
     environment:
-      - ME_CONFIG_MONGODB_ENABLE_ADMIN=false
-      - ME_CONFIG_BASICAUTH_USERNAME=${DB_USER}
-      - ME_CONFIG_BASICAUTH_PASSWORD=${DB_PASSWORD}
-      - ME_CONFIG_MONGODB_SERVER=dev-db
-      - ME_CONFIG_MONGODB_PORT=${DB_PORT}
+      - ME_CONFIG_MONGODB_SERVER=mono-mongo-dev
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${DB_USER}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${DB_PASSWORD}
   dev-db:
     container_name: mono-mongo-dev
     restart: always

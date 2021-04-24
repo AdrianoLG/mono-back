@@ -7,11 +7,9 @@ RUN npm install
 FROM base AS development
 ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
-RUN npm run start:dev
 
 FROM base AS production
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 RUN npm test && \
-    npm run build && \
-    npm run start:prod
+    npm run build
